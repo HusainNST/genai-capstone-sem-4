@@ -75,7 +75,7 @@ Only requires [uv](https://docs.astral.sh/uv/) (handles Python + venv + deps aut
 #### 1. Clone the repository
 
 ```bash
-git clone <your-repo-url>
+git clone https://github.com/HusainNST/genai-capstone-sem-4.git
 cd genai-capstone-sem-4
 ```
 
@@ -93,7 +93,7 @@ A pre-trained model (`models/credit_risk_model_v2.pkl`) is included. Skip this s
 uv run run_training.py
 ```
 
-This runs the full pipeline: load → clean → split → SMOTE + GridSearchCV → evaluate → save. Expect 2–5 minutes depending on your machine.
+This runs the full pipeline: load → clean → split → GridSearchCV → evaluate → save. Expect 2–5 minutes depending on your machine.
 
 #### 4. Launch the dashboard
 
@@ -120,7 +120,7 @@ Local URL:  http://localhost:8501
 #### 1. Clone the repository
 
 ```bash
-git clone <your-repo-url>
+git clone https://github.com/HusainNST/genai-capstone-sem-4.git
 cd genai-capstone-sem-4
 ```
 
@@ -146,7 +146,7 @@ A pre-trained model (`models/credit_risk_model_v2.pkl`) is included. Skip this s
 python3 run_training.py
 ```
 
-This runs the full pipeline: load → clean → split → SMOTE + GridSearchCV → evaluate → save. Expect 2–5 minutes depending on your machine.
+This runs the full pipeline: load → clean → split → GridSearchCV → evaluate → save. Expect 2–5 minutes depending on your machine.
 
 #### 5. Launch the dashboard
 

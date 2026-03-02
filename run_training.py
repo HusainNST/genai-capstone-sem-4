@@ -23,7 +23,7 @@ def main():
     X_train, X_test, y_train, y_test = split_data(df)
     print(f"  Train: {X_train.shape}  |  Test: {X_test.shape}")
 
-    print("\n[3/4] Training model with SMOTE + GridSearchCV...")
+    print("\n[3/4] Training model with GridSearchCV...")
     model = train_model(X_train, y_train)
 
     print("\n[4/4] Evaluating model...")
