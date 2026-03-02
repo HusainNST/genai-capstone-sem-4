@@ -11,7 +11,7 @@ AI-Powered Credit Risk Intelligence Platform built on the German Credit Dataset.
 This project trains a machine learning model to classify loan applicants as **Good** (low default risk) or **Bad** (high default risk), and exposes the model through a dark fintech-style Streamlit dashboard.
 
 **Dataset:** German Credit Data (1,000 applicants, UCI Repository)
-**Model:** Random Forest with SMOTE oversampling + GridSearchCV hyperparameter tuning
+**Model:** XGBoost with GridSearchCV hyperparameter tuning
 **Tech:** Python · scikit-learn · imbalanced-learn · Streamlit · Plotly
 
 ---
@@ -19,28 +19,32 @@ This project trains a machine learning model to classify loan applicants as **Go
 ## Project Structure
 
 ```
-ai-ml-capstone/
+genai-capstone-sem-4/
 ├── data/
 │   └── german_credit_data.csv      # Raw dataset
 ├── models/
 │   └── credit_risk_model_v2.pkl    # Trained model artifact
 ├── notebooks/
 │   └── train_process.ipynb         # Exploratory analysis notebook
+├── report/
+│   ├── genai_credit_risk-2.pdf     # Project report
+│   └── main.tex                    # LaTeX source
 ├── screenshots/
 │   └── dashboard.png               # UI preview
 ├── src/
-│   ├── __init__.py
 │   ├── data.py                     # load_data() — CSV loading & cleaning
 │   ├── preprocess.py               # build_preprocessor(), split_data()
 │   ├── train.py                    # train_model(), evaluate_model()
 │   └── predict.py                  # make_prediction() — inference helper
-├── tests/
-│   └── test_pipeline.py            # Unit tests (9 passing)
 ├── .streamlit/
 │   └── config.toml                 # Dark theme configuration
 ├── app.py                          # Streamlit dashboard
 ├── run_training.py                 # Training pipeline orchestrator
-└── requirements.txt
+├── pyproject.toml                  # Project metadata & dependencies
+├── requirements.txt                # Pip-compatible dependency list
+├── uv.lock                         # uv lockfile
+├── .python-version                 # Pinned Python version (3.12)
+└── .gitignore
 ```
 
 ---
@@ -62,22 +66,65 @@ ai-ml-capstone/
 
 ## Local Setup
 
-Follow these steps to run the project on your machine from scratch.
+Pick **one** of the two installation methods below.
 
-### Prerequisites
+### Option A — Using uv
 
-- Python 3.9 or higher
-- `pip` package manager
-- Terminal / command prompt
+Only requires [uv](https://docs.astral.sh/uv/) (handles Python + venv + deps automatically).
 
-### Step 1 — Clone the repository
+#### 1. Clone the repository
 
 ```bash
 git clone <your-repo-url>
-cd ai-ml-capstone
+cd genai-capstone-sem-4
 ```
 
-### Step 2 — Create a virtual environment (recommended)
+#### 2. Install dependencies
+
+```bash
+uv sync
+```
+
+#### 3. Train the model (optional)
+
+A pre-trained model (`models/credit_risk_model_v2.pkl`) is included. Skip this step unless you want to retrain from scratch.
+
+```bash
+uv run run_training.py
+```
+
+This runs the full pipeline: load → clean → split → SMOTE + GridSearchCV → evaluate → save. Expect 2–5 minutes depending on your machine.
+
+#### 4. Launch the dashboard
+
+```bash
+uv run streamlit run app.py
+```
+
+Streamlit will print a local URL — open it in your browser:
+
+```
+Local URL:  http://localhost:8501
+```
+
+---
+
+### Option B — Using pip
+
+#### Prerequisites
+
+- Python 3.12 or higher
+- `pip` package manager
+- Terminal / command prompt
+
+#### 1. Clone the repository
+
+```bash
+git clone <your-repo-url>
+cd genai-capstone-sem-4
+```
+
+#### 2. Create a virtual environment (recommended)
 
 ```bash
 python3 -m venv venv
@@ -85,13 +132,13 @@ source venv/bin/activate        # macOS / Linux
 # venv\Scripts\activate         # Windows
 ```
 
-### Step 3 — Install dependencies
+#### 3. Install dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### Step 4 — Train the model
+#### 4. Train the model (optional)
 
 A pre-trained model (`models/credit_risk_model_v2.pkl`) is included. Skip this step unless you want to retrain from scratch.
 
@@ -101,7 +148,7 @@ python3 run_training.py
 
 This runs the full pipeline: load → clean → split → SMOTE + GridSearchCV → evaluate → save. Expect 2–5 minutes depending on your machine.
 
-### Step 5 — Launch the dashboard
+#### 5. Launch the dashboard
 
 ```bash
 streamlit run app.py
@@ -112,14 +159,6 @@ Streamlit will print a local URL — open it in your browser:
 ```
 Local URL:  http://localhost:8501
 ```
-
-### Step 6 — Run tests
-
-```bash
-python3 -m pytest tests/ -v
-```
-
-All 9 tests should pass in under 5 seconds.
 
 ---
 
@@ -132,7 +171,6 @@ Trained with 5-fold cross-validated GridSearchCV optimising for **Recall** (mini
 | Accuracy | ~76% |
 | ROC-AUC | ~80% |
 | Optimiser | GridSearchCV (recall scoring) |
-| Sampler | SMOTE (class imbalance correction) |
 
 ---
 
