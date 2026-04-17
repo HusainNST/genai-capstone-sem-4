@@ -8,6 +8,7 @@ import plotly.graph_objects as go
 import streamlit as st
 
 from src.predict import make_prediction
+from src.agent import run_agentic_audit
 
 MODEL_PATH = os.path.join("models", "credit_risk_model_v2.pkl")
 
@@ -16,7 +17,7 @@ st.set_page_config(
     page_title="CreditRisk Dashboard",
     page_icon="💳",
     layout="wide",
-    initial_sidebar_state="collapsed",
+    initial_sidebar_state="expanded",
 )
 
 # ── Global CSS ─────────────────────────────────────────────────────────────────
@@ -286,7 +287,24 @@ html, body, [class*="css"] {
 
 /* ─────────────────── HIDE CHROME ─────────────────── */
 [data-testid="stToolbar"], footer, #MainMenu { display: none !important; }
-[data-testid="collapsedControl"] { display: none !important; }
+
+/* ── AGENTIC STYLING ─────────────────── */
+.agent-audit {
+    background: #0d0d20; border: 1px solid #1e1e38;
+    border-radius: 14px; padding: 22px; margin-top: 15px;
+    font-family: 'Syne', sans-serif;
+}
+.agent-hdr { display: flex; align-items: center; gap: 12px; margin-bottom: 15px; }
+.agent-ico { font-size: 24px; }
+.agent-title { color: #bb86fc; font-size: 16px; font-weight: 700; letter-spacing: 0.5px; }
+.agent-trace {
+    display: flex; gap: 8px; margin-bottom: 20px;
+}
+.trace-step {
+    font-size: 9px; padding: 4px 10px; border-radius: 6px;
+    background: #181830; color: #2e2e50; font-family: 'DM Mono', monospace;
+}
+.trace-step.active { background: #bb86fc; color: #06060f; font-weight: 700; }
 </style>
 """,
     unsafe_allow_html=True,
@@ -422,6 +440,23 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
+# ── Sidebar Setup ──────────────────────────────────────────────────────────────
+with st.sidebar:
+    st.markdown("### ⚙️ Settings")
+    api_key = st.text_input("Groq API Key", type="password", help="Required for Agentic AI reasoning.")
+    if api_key:
+        os.environ["GROQ_API_KEY"] = api_key
+        st.success("API Key Loaded")
+    else:
+        st.warning("Enter API Key to enable GenAI Reasoning")
+    
+    st.divider()
+    st.markdown("### 🤖 Agentic AI Status")
+    if "agent_result" in st.session_state:
+        st.info(f"Last status: {st.session_state['agent_status']}")
+    else:
+        st.info("Agent Idle")
+
 # ── Layout ─────────────────────────────────────────────────────────────────────
 col_left, col_right = st.columns([4, 6], gap="large")
 
@@ -511,6 +546,19 @@ with col_left:
             }
         )
         result = make_prediction(model, input_df)
+        
+        # ── RUN AGENTIC AUDIT ──
+        if os.getenv("GROQ_API_KEY"):
+            with st.spinner("🤖 Agentic AI is auditing the profile..."):
+                agent_output = run_agentic_audit(model, {
+                    "age": age, "sex": sex, "job": job, "housing": housing,
+                    "saving_accounts": saving_accounts, "checking_account": checking_account,
+                    "credit_amount": credit_amount, "duration": duration, "purpose": purpose
+                })
+                st.session_state["agent_result"] = agent_output["audit_summary"]
+                st.session_state["agent_status"] = agent_output["status"]
+                st.session_state["policy_context"] = agent_output["policy_context"]
+        
         st.session_state["result"] = {
             **result,
             "age": age,
@@ -743,6 +791,31 @@ with col_right:
         </div>""",
             unsafe_allow_html=True,
         )
+
+        # ── Agentic AI Auditor Report ──────────────────────────────────────────
+        if "agent_result" in st.session_state:
+            st.markdown("<br>", unsafe_allow_html=True)
+            st.markdown(
+                f"""
+                <div class="agent-audit">
+                    <div class="agent-hdr">
+                        <div class="agent-ico">🤖</div>
+                        <div class="agent-title">GenAI Auditor's Report</div>
+                    </div>
+                    <div class="agent-trace">
+                        <div class="trace-step active">ML_INFERRED</div>
+                        <div class="trace-step active">POLICY_RETRIEVED</div>
+                        <div class="trace-step active">AUDITED</div>
+                    </div>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+            with st.expander("📝 View Detailed Audit Reasoning", expanded=True):
+                st.markdown(st.session_state["agent_result"])
+            
+            with st.expander("📚 Related Policy Snippets (RAG)"):
+                st.markdown(st.session_state.get("policy_context", "No context retrieved."))
 
         # ── Footer ─────────────────────────────────────────────────────────────
         st.markdown(
