@@ -2,7 +2,8 @@
 
 An **Agentic AI** platform for credit risk assessment, combining a traditional XGBoost ML model with a **LangGraph-orchestrated agent**, **RAG-based credit policy retrieval**, and a **Groq/Llama 3.3 LLM auditor** — all wrapped in a dark fintech-style Streamlit dashboard.
 
-> **Capstone Project · Semester 4 · AI/ML Programme**
+> **Capstone Project · Semester 4 · AI/ML Programme**  
+> 🚀 **Live Demo:** [genai-capstone-sem-4.streamlit.app](https://genai-capstone-sem-4.streamlit.app/)
 
 ---
 
@@ -20,33 +21,32 @@ This project evolves a baseline ML credit risk classifier into a full **Agentic 
 **Agentic Stack:** LangGraph · LangChain · Groq (Llama 3.3-70B) · FAISS · Sentence Transformers  
 **UI:** Streamlit · Plotly
 
----
+## System Architecture
 
-## Agentic Workflow Architecture
+The platform follows a modular **Agentic AI** architecture, where a traditional ML engine provides predictive signals that are subsequently audited by an LLM grounded in real-world credit policies via RAG.
 
+```mermaid
+graph TD
+    User([User Input]) --> App[Streamlit Dashboard]
+    App --> Workflow{LangGraph Orchestrator}
+    
+    subgraph "Agentic Workspace"
+        Workflow --> MLNode[ML Inference Node]
+        MLNode --> XGB[XGBoost Engine]
+        XGB --> MLNode
+        
+        MLNode -- "ml_result" --> RAGNode[RAG Retrieval Node]
+        RAGNode --> FAISS[FAISS Vector Store]
+        FAISS -- "policy_context" --> RAGNode
+        
+        RAGNode --> AuditNode[LLM Auditor Node]
+        AuditNode --> Llama[Llama 3.3 @ Groq]
+        Llama -- "audit_summary" --> AuditNode
+    end
+    
+    AuditNode --> FinalOutput([Final Recommendation & Reasoning])
+    FinalOutput --> App
 ```
-User Input (Form)
-       │
-       ▼
-┌──────────────────────────────────────────────────────────┐
-│                   LangGraph Agent                        │
-│                                                          │
-│  Node 1: predict_risk  →  XGBoost ML Model              │
-│       ↓                                                  │
-│  Node 2: retrieve_policy  →  FAISS + Sentence-BERT RAG  │
-│       ↓                                                  │
-  │  Node 3: generate_audit  →  Groq (Llama 3.3-70B) LLM    │
-└──────────────────────────────────────────────────────────┘
-       │
-       ▼
-Dashboard Output:
-  • Risk Score Gauge
-  • KPI Cards
-  • Policy-Grounded Audit Report (Agentic)
-  • RAG Policy Snippets
-```
-
----
 
 ## Project Structure
 
@@ -54,45 +54,53 @@ Dashboard Output:
 genai-capstone-sem-4/
 ├── data/
 │   ├── german_credit_data.csv        # Raw dataset (UCI German Credit)
-│   └── credit_policy.md              # 🆕 Bank credit policy (RAG knowledge base)
+│   └── credit_policy.md              # Bank credit policy (RAG knowledge base)
 ├── models/
 │   └── credit_risk_model_v2.pkl      # Trained XGBoost model artifact
-├── notebooks/
-│   └── train_process.ipynb           # Exploratory analysis notebook
 ├── report/
-│   ├── genai_credit_risk-3.pdf       # Project report (PDF)
-│   └── main.tex                      # LaTeX source
-├── screenshots/
-│   └── dashboard.png                 # UI preview
+│   ├── agentic_ai_endsem.pdf         # Project report (PDF)
+│   └── agentic_ai_endsem.tex         # LaTeX source
 ├── src/
 │   ├── data.py                       # load_data() — CSV loading & cleaning
 │   ├── preprocess.py                 # build_preprocessor(), split_data()
 │   ├── train.py                      # train_model(), evaluate_model()
 │   ├── predict.py                    # make_prediction() — inference helper
-│   ├── rag.py                        # 🆕 PolicyRetriever — FAISS-based RAG
-│   └── agent.py                      # 🆕 LangGraph agentic workflow
-├── .streamlit/
-│   └── config.toml                   # Dark theme configuration
-├── .env.example                      # 🆕 Environment variable template
+│   ├── rag.py                        # PolicyRetriever — FAISS-based RAG
+│   └── agent.py                      # LangGraph agentic workflow
 ├── app.py                            # Streamlit dashboard (Agentic UI)
-├── run_training.py                   # Training pipeline orchestrator
-├── pyproject.toml                    # Project metadata & dependencies
-├── requirements.txt                  # Pip-compatible dependency list
-└── .gitignore
+└── requirements.txt                  # Dependency list
 ```
 
 ---
 
-## Agentic AI Features
+## Core Components
 
-| Component | Description |
-|---|---|
-| **LangGraph Workflow** | 3-node state machine: ML → RAG → LLM Audit |
-| **RAG Retrieval** | FAISS vector search over credit policy rules |
-| **LLM Auditor** | Groq (Llama 3.3-70B) provides policy-grounded reasoning |
-| **Reasoning Trace** | Dashboard shows each agent step (ML\_INFERRED → POLICY\_RETRIEVED → AUDITED) |
-| **Policy Override Detection** | Agent flags when policy rules contradict the ML model |
-| **UK Bank Credit Policy KB** | 5-category policy document used as the RAG knowledge base |
+### 1. Predictive Engine (XGBoost)
+A production-grade **XGBoost** classifier trained on the UCI German Credit dataset. 
+- **Optimization:** Hyperparameter tuning via `GridSearchCV` specifically optimizing for **Recall** (Safety-first approach to minimize False Negatives).
+- **Preprocessing:** Robust pipeline using `ColumnTransformer` for categorical encoding and numerical scaling.
+- **Metrics:** ~76% Accuracy \| 0.80 ROC-AUC.
+
+### 2. RAG Pipeline (Policy Intelligence)
+To move beyond black-box predictions, we implement a **Retrieval-Augmented Generation** layer.
+- **Knowledge Base:** Internal "Universal Bank Credit Policy" (Markdown).
+- **Processing:** `MarkdownHeaderTextSplitter` preserves the semantic structure of bank rules.
+- **Vector Store:** **FAISS** index for high-performance similarity search.
+- **Embeddings:** `all-MiniLM-L6-v2` for dense vector representation of policy clauses.
+
+### 3. Agentic Orchestrator (LangGraph)
+The system uses a **LangGraph State Machine** to coordinate between the ML model and the LLM.
+- **State Schema:** A `TypedDict` (`AgentState`) tracks the client data, ML results, and retrieved policy snippets across the cycle.
+- **State Transitions:**
+    1. `START` → `predict_risk`: Generate probabilistic default score.
+    2. `predict_risk` → `retrieve_policy`: Fetch specific rules relevant to the applicant's profile (e.g., age-based limits).
+    3. `retrieve_policy` → `generate_audit`: Synthesize ML + Policy for the final verdict.
+    4. `generate_audit` → `END`.
+
+### 4. LLM Auditor (Llama 3.3)
+Hosted on **Groq Cloud** for sub-second inference latency.
+- **Model:** `llama-3.3-70b-versatile`.
+- **Logic:** Evaluates if the ML prediction violates any "Hard Policies" (e.g., loan caps, age restrictions) and provides a human-readable grounding trace.
 
 ---
 
@@ -196,13 +204,20 @@ Trained with 5-fold cross-validated GridSearchCV optimising for **Recall** (mini
 
 ---
 
+## Project Walkthrough
+
+> [!NOTE]
+> **Project Demo Video:** [Coming Soon / Link Placeholder]
+
+---
+
 ## Tech Stack
 
 | Layer | Technology |
 |---|---|
-| ML Model | XGBoost, scikit-learn, imbalanced-learn |
-| Agentic Orchestration | LangGraph |
-| LLM | Groq API (Llama-3.3-70b-versatile) |
-| RAG | FAISS, Sentence Transformers (all-MiniLM-L6-v2), LangChain |
-| Dashboard | Streamlit, Plotly |
-| Dependency Management | pip (via venv_stable) |
+| **ML Engine** | XGBoost, scikit-learn, imbalanced-learn |
+| **Agentic Workflow** | LangGraph, LangChain |
+| **Inference API** | Groq Cloud (Llama 3.3-70B) |
+| **Vector DB / RAG** | FAISS, HuggingFace Embeddings (all-MiniLM-L6-v2) |
+| **UI Framework** | Streamlit, Plotly |
+| **Environment** | Python-dotenv, pip (venv_stable) |
