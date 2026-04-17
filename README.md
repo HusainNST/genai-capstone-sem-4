@@ -1,6 +1,6 @@
 # CreditRisk AI — Agentic Credit Risk Intelligence Platform
 
-An **Agentic AI** platform for credit risk assessment, combining a traditional XGBoost ML model with a **LangGraph-orchestrated agent**, **RAG-based credit policy retrieval**, and a **Groq/Llama3 LLM auditor** — all wrapped in a dark fintech-style Streamlit dashboard.
+An **Agentic AI** platform for credit risk assessment, combining a traditional XGBoost ML model with a **LangGraph-orchestrated agent**, **RAG-based credit policy retrieval**, and a **Groq/Llama 3.3 LLM auditor** — all wrapped in a dark fintech-style Streamlit dashboard.
 
 > **Capstone Project · Semester 4 · AI/ML Programme**
 
@@ -13,11 +13,11 @@ This project evolves a baseline ML credit risk classifier into a full **Agentic 
 1. **XGBoost ML Engine** — classifies loan applicants as Good/Bad risk with default probability.
 2. **RAG Policy Retriever** — retrieves relevant clauses from the Universal Bank Credit Policy using FAISS + Sentence Transformers.
 3. **LangGraph Agentic Workflow** — orchestrates the ML and RAG steps, then routes to the LLM auditor.
-4. **Groq/Llama3 LLM Auditor** — reasons over the ML prediction and policy context to generate a grounded, explainable final recommendation.
+4. **Groq/Llama 3.3 LLM Auditor** — reasons over the ML prediction and policy context to generate a grounded, explainable final recommendation.
 
 **Dataset:** German Credit Data (1,000 applicants, UCI Repository)  
 **ML Model:** XGBoost + GridSearchCV (recall-optimised)  
-**Agentic Stack:** LangGraph · LangChain · Groq (Llama3-8B) · FAISS · Sentence Transformers  
+**Agentic Stack:** LangGraph · LangChain · Groq (Llama 3.3-70B) · FAISS · Sentence Transformers  
 **UI:** Streamlit · Plotly
 
 ---
@@ -35,7 +35,7 @@ User Input (Form)
 │       ↓                                                  │
 │  Node 2: retrieve_policy  →  FAISS + Sentence-BERT RAG  │
 │       ↓                                                  │
-│  Node 3: generate_audit  →  Groq (Llama3-8B) LLM       │
+  │  Node 3: generate_audit  →  Groq (Llama 3.3-70B) LLM    │
 └──────────────────────────────────────────────────────────┘
        │
        ▼
@@ -78,8 +78,6 @@ genai-capstone-sem-4/
 ├── run_training.py                   # Training pipeline orchestrator
 ├── pyproject.toml                    # Project metadata & dependencies
 ├── requirements.txt                  # Pip-compatible dependency list
-├── uv.lock                           # uv lockfile
-├── .python-version                   # Pinned Python version (3.12)
 └── .gitignore
 ```
 
@@ -91,7 +89,7 @@ genai-capstone-sem-4/
 |---|---|
 | **LangGraph Workflow** | 3-node state machine: ML → RAG → LLM Audit |
 | **RAG Retrieval** | FAISS vector search over credit policy rules |
-| **LLM Auditor** | Groq (Llama3-8B) provides policy-grounded reasoning |
+| **LLM Auditor** | Groq (Llama 3.3-70B) provides policy-grounded reasoning |
 | **Reasoning Trace** | Dashboard shows each agent step (ML\_INFERRED → POLICY\_RETRIEVED → AUDITED) |
 | **Policy Override Detection** | Agent flags when policy rules contradict the ML model |
 | **UK Bank Credit Policy KB** | 5-category policy document used as the RAG knowledge base |
@@ -118,59 +116,35 @@ genai-capstone-sem-4/
 
 ### Prerequisites
 
-- Python 3.12 or higher
+- Python 3.9+ (Stable environment required for ML dependencies)
 - A free **Groq API Key** — get one at [console.groq.com/keys](https://console.groq.com/keys)
 
 ---
 
-### Option A — Using uv (Recommended)
+### Local Setup Guide
 
 ```bash
 # 1. Clone the repository
 git clone https://github.com/HusainNST/genai-capstone-sem-4.git
 cd genai-capstone-sem-4
 
-# 2. Install all dependencies (ML + Agentic AI)
-uv sync
+# 2. Create and activate a stable virtual environment
+python3 -m venv venv_stable
+source venv_stable/bin/activate        # macOS / Linux
+# venv_stable\Scripts\activate         # Windows
 
-# 3. Set up your API key
-cp .env.example .env
-# Open .env and fill in your GROQ_API_KEY
-
-# 4. (Optional) Retrain the model from scratch
-uv run run_training.py
-
-# 5. Launch the dashboard
-uv run streamlit run app.py
-```
-
----
-
-### Option B — Using pip
-
-```bash
-# 1. Clone the repository
-git clone https://github.com/HusainNST/genai-capstone-sem-4.git
-cd genai-capstone-sem-4
-
-# 2. Create and activate a virtual environment
-python3 -m venv venv
-source venv/bin/activate        # macOS / Linux
-# venv\Scripts\activate         # Windows
-
-# 3. Install dependencies
+# 3. Upgrade pip and install dependencies
+pip install --upgrade pip
 pip install -r requirements.txt
 
 # 4. Set up your API key
 cp .env.example .env
 # Open .env and fill in your GROQ_API_KEY
 
-# 5. (Optional) Retrain the model
-python3 run_training.py
-
-# 6. Launch the dashboard
+# 5. Launch the dashboard
 streamlit run app.py
 ```
+
 
 ---
 
@@ -228,7 +202,7 @@ Trained with 5-fold cross-validated GridSearchCV optimising for **Recall** (mini
 |---|---|
 | ML Model | XGBoost, scikit-learn, imbalanced-learn |
 | Agentic Orchestration | LangGraph |
-| LLM | Groq API (Llama3-8B-8192) |
+| LLM | Groq API (Llama-3.3-70b-versatile) |
 | RAG | FAISS, Sentence Transformers (all-MiniLM-L6-v2), LangChain |
 | Dashboard | Streamlit, Plotly |
-| Dependency Management | uv |
+| Dependency Management | pip (via venv_stable) |

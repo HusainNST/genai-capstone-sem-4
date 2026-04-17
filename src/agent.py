@@ -23,6 +23,7 @@ class AgentState(TypedDict):
     audit_summary: str         # Final LLM reasoning
     messages: List[BaseMessage]
     status: str                # Current workflow status
+    model: object              # ML Model object
 
 # ── Nodes ─────────────────────────────────────────────────────────────────────
 
@@ -52,7 +53,7 @@ def policy_retrieval_node(state: AgentState):
 
 def auditor_node(state: AgentState):
     """LLM Auditor that combines ML predictions with Policy rules."""
-    llm = ChatGroq(model="llama3-8b-8192", temperature=0)
+    llm = ChatGroq(model="llama-3.3-70b-versatile", temperature=0)
     
     ml = state["ml_result"]
     client = state["client_data"]
@@ -117,17 +118,36 @@ def get_credit_agent():
     return _agent
 
 def run_agentic_audit(model, client_data: dict):
-    """Entry point for the Streamlit app to run the full agentic flow."""
+    """Entry point for the Streamlit app to run the full agentic flow.
+    
+    Accepts either:
+      - Original column-name keys: {'Age': 22, 'Sex': 'male', ...}
+      - Snake_case keys from app.py: {'age': 22, 'sex': 'male', ...}
+    """
     agent = get_credit_agent()
-    
-    # Prep initial state
-    input_df = pd.DataFrame([client_data])
-    
-    initial_state = {
-        "client_data": client_data,
-        "input_df": input_df,
-        "model": model, # Hidden dependency for node
-        "status": "STARTING"
+
+    # ── Normalize keys to match the model's trained column names ─────────────
+    KEY_MAP = {
+        "age":              "Age",
+        "sex":              "Sex",
+        "job":              "Job",
+        "housing":          "Housing",
+        "saving_accounts":  "Saving accounts",
+        "checking_account": "Checking account",
+        "credit_amount":    "Credit amount",
+        "duration":         "Duration",
+        "purpose":          "Purpose",
     }
-    
+    normalized = {KEY_MAP.get(k, k): v for k, v in client_data.items()}
+
+    # Prep initial state
+    input_df = pd.DataFrame([normalized])
+
+    initial_state = {
+        "client_data": normalized,
+        "input_df": input_df,
+        "model": model,         # Hidden dependency for the ml_inference_node
+        "status": "STARTING",
+    }
+
     return agent.invoke(initial_state)

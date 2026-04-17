@@ -1,7 +1,24 @@
+# Python & General
 __pycache__/
-*.pyc
-*.pyo
+*.py[cod]
+*$py.class
+*.so
 .pytest_cache/
 .DS_Store
+
+# Environments
 venv/
+venv_stable/
+env/
 .env
+
+# Agentic AI & RAG Data
+data/faiss_index/
+.claude/
+.cursor/
+
+# Streamlit
+.streamlit/secrets.toml
+
+# Models (Optional: Comment out if you WANT to commit the .pkl models)
+# models/*.pkl
