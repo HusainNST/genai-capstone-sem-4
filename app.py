@@ -411,19 +411,22 @@ def create_donut_gauge(default_prob_pct: float) -> go.Figure:
     )
 
     fig.add_annotation(
-        x=0.5, y=0.60,
+        x=0.5,
+        y=0.60,
         text=f"<b>{pct:.1f}</b>",
         font=dict(size=40, color="white", family="Syne"),
         showarrow=False,
     )
     fig.add_annotation(
-        x=0.5, y=0.42,
+        x=0.5,
+        y=0.42,
         text="percent",
         font=dict(size=12, color="#2e2e50", family="Syne"),
         showarrow=False,
     )
     fig.add_annotation(
-        x=0.5, y=0.19,
+        x=0.5,
+        y=0.19,
         text=f"● {label}",
         font=dict(size=11, color=color, family="DM Mono"),
         showarrow=False,
@@ -500,13 +503,15 @@ st.markdown(
 # ── Sidebar Setup ──────────────────────────────────────────────────────────────
 with st.sidebar:
     st.markdown("### ⚙️ Settings")
-    api_key = st.text_input("Groq API Key", type="password", help="Required for Agentic AI reasoning.")
+    api_key = st.text_input(
+        "Groq API Key", type="password", help="Required for Agentic AI reasoning."
+    )
     if api_key:
         os.environ["GROQ_API_KEY"] = api_key
         st.success("API Key Loaded")
     else:
         st.warning("Enter API Key to enable GenAI Reasoning")
-    
+
     st.divider()
     st.markdown("### 🤖 Agentic AI Status")
     if "agent_result" in st.session_state:
@@ -603,19 +608,28 @@ with col_left:
             }
         )
         result = make_prediction(model, input_df)
-        
+
         # ── RUN AGENTIC AUDIT ──
         if os.getenv("GROQ_API_KEY"):
             with st.spinner("🤖 Agentic AI is auditing the profile..."):
-                agent_output = run_agentic_audit(model, {
-                    "age": age, "sex": sex, "job": job, "housing": housing,
-                    "saving_accounts": saving_accounts, "checking_account": checking_account,
-                    "credit_amount": credit_amount, "duration": duration, "purpose": purpose
-                })
+                agent_output = run_agentic_audit(
+                    model,
+                    {
+                        "age": age,
+                        "sex": sex,
+                        "job": job,
+                        "housing": housing,
+                        "saving_accounts": saving_accounts,
+                        "checking_account": checking_account,
+                        "credit_amount": credit_amount,
+                        "duration": duration,
+                        "purpose": purpose,
+                    },
+                )
                 st.session_state["agent_result"] = agent_output["audit_summary"]
                 st.session_state["agent_status"] = agent_output["status"]
                 st.session_state["policy_context"] = agent_output["policy_context"]
-        
+
         st.session_state["result"] = {
             **result,
             "age": age,
@@ -679,12 +693,19 @@ with col_right:
         job_color = "#2563eb" if d["job"] >= 2 else "#f59e0b"
 
         sav_color_map = {
-            "unknown": "#ef4444", "little": "#f59e0b",
-            "moderate": "#2563eb", "quite rich": "#22c55e", "rich": "#22c55e",
+            "unknown": "#ef4444",
+            "little": "#f59e0b",
+            "moderate": "#2563eb",
+            "quite rich": "#22c55e",
+            "rich": "#22c55e",
         }
         sav_color = sav_color_map.get(d["saving_accounts"], "#6060a0")
 
-        prob_color = "#ef4444" if default_prob >= 70 else ("#f59e0b" if default_prob >= 40 else "#22c55e")
+        prob_color = (
+            "#ef4444"
+            if default_prob >= 70
+            else ("#f59e0b" if default_prob >= 40 else "#22c55e")
+        )
 
         st.markdown(
             f"""
@@ -739,8 +760,14 @@ with col_right:
             st.markdown("</div>", unsafe_allow_html=True)
 
         with p_col:
-            housing_icon = {"own": "🏠", "free": "🏢", "rent": "🏗️"}.get(d["housing"], "🏠")
-            chk_color = "#22c55e" if d["checking_account"] in {"rich", "moderate"} else "#ef4444"
+            housing_icon = {"own": "🏠", "free": "🏢", "rent": "🏗️"}.get(
+                d["housing"], "🏠"
+            )
+            chk_color = (
+                "#22c55e"
+                if d["checking_account"] in {"rich", "moderate"}
+                else "#ef4444"
+            )
 
             st.markdown(
                 f"""
@@ -870,9 +897,11 @@ with col_right:
             )
             with st.expander("📝 View Detailed Audit Reasoning", expanded=True):
                 st.markdown(st.session_state["agent_result"])
-            
+
             with st.expander("📚 Related Policy Snippets (RAG)"):
-                st.markdown(st.session_state.get("policy_context", "No context retrieved."))
+                st.markdown(
+                    st.session_state.get("policy_context", "No context retrieved.")
+                )
 
         # ── Footer ─────────────────────────────────────────────────────────────
         st.markdown(

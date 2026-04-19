@@ -11,6 +11,7 @@ from langchain_text_splitters import MarkdownHeaderTextSplitter
 POLICY_PATH = os.path.join("data", "credit_policy.md")
 DB_PATH = os.path.join("data", "faiss_index")
 
+
 class PolicyRetriever:
     def __init__(self, policy_path: str = POLICY_PATH):
         self.policy_path = policy_path
@@ -27,13 +28,15 @@ class PolicyRetriever:
             ("#", "Header 1"),
             ("##", "Header 2"),
         ]
-        markdown_splitter = MarkdownHeaderTextSplitter(headers_to_split_on=headers_to_split_on)
-        
+        markdown_splitter = MarkdownHeaderTextSplitter(
+            headers_to_split_on=headers_to_split_on
+        )
+
         with open(self.policy_path, "r") as f:
             content = f.read()
-        
+
         splits = markdown_splitter.split_text(content)
-        
+
         # Create vectorstore
         vectorstore = FAISS.from_documents(splits, self.embeddings)
         return vectorstore
@@ -49,18 +52,22 @@ class PolicyRetriever:
         Returns a formatted context string.
         """
         # Formulate a detailed query based on client profile
-        query = f"Rules for loan with {client_data.get('credit_amount')} DM, " \
-                f"duration {client_data.get('duration')} months, " \
-                f"age {client_data.get('age')}, " \
-                f"purpose {client_data.get('purpose')}, " \
-                f"savings {client_data.get('saving_accounts')}."
-        
+        query = (
+            f"Rules for loan with {client_data.get('credit_amount')} DM, "
+            f"duration {client_data.get('duration')} months, "
+            f"age {client_data.get('age')}, "
+            f"purpose {client_data.get('purpose')}, "
+            f"savings {client_data.get('saving_accounts')}."
+        )
+
         relevant_rules = self.retrieve(query)
         context = "\n---\n".join(relevant_rules)
         return context
 
+
 # Global instance for easy access
 _retriever = None
+
 
 def get_retriever():
     global _retriever

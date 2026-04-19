@@ -8,8 +8,8 @@ from src.data import load_data
 from src.preprocess import split_data
 from src.train import evaluate_model, train_model
 
-DATA_PATH = os.path.join('data', 'german_credit_data.csv')
-MODEL_OUTPUT_PATH = os.path.join('models', 'credit_risk_model_v2.pkl')
+DATA_PATH = os.path.join("data", "german_credit_data.csv")
+MODEL_OUTPUT_PATH = os.path.join("models", "credit_risk_model_v2.pkl")
 
 
 def main():
@@ -32,10 +32,10 @@ def main():
     print(f"  ROC-AUC  : {metrics['roc_auc']:.4f}")
     print(f"\n{metrics['report']}")
 
-    os.makedirs('models', exist_ok=True)
+    os.makedirs("models", exist_ok=True)
     joblib.dump(model, MODEL_OUTPUT_PATH)
     print(f"Model saved → {MODEL_OUTPUT_PATH}")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

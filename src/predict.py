@@ -24,8 +24,8 @@ def make_prediction(model, input_data: pd.DataFrame) -> dict:
         confidence = probabilities[0] * 100
 
     return {
-        'prediction': int(prediction),
-        'risk_label': risk_label,
-        'confidence': round(confidence, 1),
-        'default_probability': round(float(probabilities[1]) * 100, 1),
+        "prediction": int(prediction),
+        "risk_label": risk_label,
+        "confidence": round(confidence, 1),
+        "default_probability": round(float(probabilities[1]) * 100, 1),
     }
